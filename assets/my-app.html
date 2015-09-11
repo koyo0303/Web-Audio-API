@@ -3,31 +3,35 @@
   @description Boilerplate for the music app (from MOTW 2015 workshop)
   @version 0.0.1
 -->
-
+<link rel="shortcut icon" href="favicon.ico">
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
-<link rel="import" href="../bower_components/spiral-knob/spiral-knob.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html"></script>
+<link rel="stylesheet" href="../assets/motw-doc.css">
 
+<!-- Spiral -->
 <script src="../bower_components/spiral/spiral.min.js"></script>
+<link rel="import" href="../bower_components/spiral-knob/spiral-knob.html"></script>
 
 <dom-module id="my-app">
 
   <style>
     /* your style here */
-    :host {
-      display: block;
-      margin: 1em;
-      font-family: 'Roboto', 'Noto', sans-serif;
-      color: #263238;
-      -webkit-font-smoothing: antialiased;
-      -webkit-user-select: none;
-    }
   </style>
 
   <template>
     <!-- your DOM here -->
-    <h1>My First Music App!</h1>
-    <spiral-knob id="knobAmp" label="Amp" value="0.25"></spiral-knob>
+    <h1>asdfghhgfdsdfghgfdsdf</h1>
+    
+    <spiral-knob id="knobFreq" label="My Knob1" size = "large" value="400" min-value="20" max-value="800"></spiral-knob>
+
+    <spiral-knob id="knobAM" label="My Knob2" size = "large" value="1" min-value="0" max-value="100"></spiral-knob>
+
+    <spiral-knob id="knobFM" label="My Knob3" size = "large" value="0" min-value="0" max-value="400"></spiral-knob>
+
+     <spiral-knob id="knobdepth" label="My Knob4" size = "large" value="0" min-value="0" max-value="400"></spiral-knob>
+
+    <spiral-knob label="My Knob5" value="0.5"></spiral-knob>
+
   </template>
 
   <script>
@@ -35,38 +39,59 @@
 
       is: "my-app",
 
-      /* user-defined properties */
       properties: {
-        
         context: {
           type: Object,
           value: new AudioContext()
-        }
-        
+
+        },
+       osc: Object,
+       osc2: Object,
+       amp: Object,
+       lfo: Object,
+       lfo2: Object,
+       aaa: Object
+        /* user-defined properties */
       },
 
-      /* user-defined methods */
-      _buildAudioGraph: function () {
-        this.context.createNodes(this, {
-          'osc': 'Oscillator',
-          'amp': 'Gain'
-        });
+      /* user-defined methods */    
+      buildGraph: function () {
+       var context = this.context;
+       this.osc = context.createOscillator();
+       this.osc2 = context.createOscillator();
+       this.amp = context.createGain();
+       this.lfo = context.createOscillator();
+       this.lfo2 = context.createOscillator();
+       this.aaa = context.createGain();
 
-        this.osc.to(this.amp).to(this.context.DAC);
-        this.amp.value = 0.25;
-        this.osc.frequency.value = 220;
-        this.osc.start();
-      },
+       this.osc2.type = 'sawtooth';
+       this.osc2.frequency = 1000;
+       
+       // this.aaa.gain.value = 600;
+       // this.lfo2.connect(this.aaa);
+       // this.aaa.connect(this.osc);
 
-      _bindUI: function () {
-        this.$.knobAmp.bind(this.amp.gain);
+       // this.osc.frequency.value = 1000;
+       // this.amp.gain.value = 0.8;
+       this.lfo.connect(this.amp.gain);
+       this.lfo2.to(this.aaa).to(this.osc.frequency)
+       this.osc.to(this.amp).to(context.DAC);
+       this.osc2.to(this.amp).to(context.DAC);
+       this.lfo.start();
+       this.lfo2.start();
+       this.osc.start();
+       this.osc2.start();
+
       },
 
       /* Polymer built-in event handlers */
       ready: function () {
-        console.log('My app is ready!');
-        this._buildAudioGraph();
-        this._bindUI();
+        this.buildGraph();
+        this.$.knobFreq.bind(this.osc.frequency);
+        this.$.knobAM.bind(this.lfo.frequency);
+        this.$.knobFM.bind(this.lfo2.frequency);
+        this.$.knobdepth.bind(this.aaa.gain);
+
       },
 
       attached: function () {}
